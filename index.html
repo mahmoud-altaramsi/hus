@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuildFlow — عرضك الخاص</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --surface: #111214;
+    --card: #181a1d;
+    --border: #252830;
+    --amber: #f5a623;
+    --amber-light: #ffc94d;
+    --amber-glow: rgba(245,166,35,0.15);
+    --amber-glow-strong: rgba(245,166,35,0.25);
+    --steel: #4a90d9;
+    --steel-glow: rgba(74,144,217,0.15);
+    --green: #2ecc71;
+    --text-primary: #f0ede8;
+    --text-secondary: #8a8f9a;
+    --text-muted: #555a66;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'Cairo',sans-serif;background:var(--black);color:var(--text-primary);overflow-x:hidden;line-height:1.7;}
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.4;}
+
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 60px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,10,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:background .3s;}
+  .logo{font-family:'Tajawal',sans-serif;font-size:1.4rem;font-weight:800;display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:34px;height:34px;background:var(--amber);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.95rem;}
+  .nav-cta{background:var(--amber);color:var(--black);padding:10px 24px;border-radius:50px;font-weight:700;font-size:.88rem;cursor:pointer;border:none;font-family:'Cairo',sans-serif;transition:all .3s;}
+  .nav-cta:hover{background:var(--amber-light);transform:translateY(-1px);box-shadow:0 8px 30px var(--amber-glow-strong);}
+
+  .personal-banner{margin-top:80px;background:linear-gradient(135deg,rgba(245,166,35,.12) 0%,rgba(74,144,217,.08) 100%);border-bottom:1px solid rgba(245,166,35,.2);padding:14px 60px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:.88rem;color:var(--amber);font-weight:600;}
+  .banner-dot{width:8px;height:8px;background:var(--amber);border-radius:50%;animation:pulse 2s infinite;flex-shrink:0;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+
+  .hero{min-height:95vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 40px 80px;position:relative;overflow:hidden;}
+  .hero-glow{position:absolute;top:15%;left:50%;transform:translateX(-50%);width:900px;height:500px;background:radial-gradient(ellipse,var(--amber-glow) 0%,transparent 70%);pointer-events:none;}
+  .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(245,166,35,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(245,166,35,.04) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 60% at 50% 40%,black 40%,transparent 100%);}
+
+  .hero-label{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:50px;padding:8px 20px;font-size:.82rem;color:var(--text-secondary);margin-bottom:28px;position:relative;z-index:1;animation:fadeUp .8s ease both;}
+  .hero h1{font-family:'Tajawal',sans-serif;font-size:clamp(2.6rem,5.5vw,4.5rem);font-weight:800;line-height:1.2;margin-bottom:20px;position:relative;z-index:1;animation:fadeUp .8s .1s ease both;}
+  .hero h1 .accent{color:var(--amber);}
+  .hero .sub{font-size:1.1rem;color:var(--text-secondary);max-width:580px;margin:0 auto 44px;position:relative;z-index:1;animation:fadeUp .8s .2s ease both;}
+
+  .price-hero-wrap{position:relative;z-index:1;animation:fadeUp .8s .3s ease both;margin-bottom:40px;}
+  .price-hero-card{background:var(--card);border:1px solid rgba(245,166,35,.35);border-radius:24px;padding:40px 52px;display:inline-flex;align-items:center;gap:56px;box-shadow:0 0 80px var(--amber-glow),0 30px 80px rgba(0,0,0,.5);flex-wrap:wrap;justify-content:center;}
+  .price-block{text-align:center;}
+  .price-label{font-size:.76rem;color:var(--text-muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;display:block;}
+  .price-amount{font-family:'Tajawal',sans-serif;font-size:3.4rem;font-weight:800;color:var(--amber);line-height:1;display:flex;align-items:flex-start;gap:6px;justify-content:center;}
+  .price-currency{font-size:1.4rem;margin-top:8px;opacity:.7;}
+  .price-note{font-size:.76rem;color:var(--text-muted);margin-top:6px;}
+  .price-divider{width:1px;height:80px;background:var(--border);flex-shrink:0;}
+  .timeline-range{font-family:'Tajawal',sans-serif;font-size:1.9rem;font-weight:800;line-height:1;margin-bottom:6px;}
+  .timeline-sub{font-size:.8rem;color:var(--text-muted);}
+  .price-includes{display:flex;flex-direction:column;gap:8px;text-align:right;}
+  .include-item{display:flex;align-items:center;gap:10px;font-size:.87rem;color:var(--text-secondary);}
+  .include-item .chk{color:var(--amber);flex-shrink:0;}
+
+  .hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1;animation:fadeUp .8s .4s ease both;}
+  .btn-primary{background:var(--amber);color:var(--black);padding:16px 36px;border-radius:50px;font-weight:700;font-size:1rem;border:none;cursor:pointer;font-family:'Cairo',sans-serif;transition:all .3s;box-shadow:0 0 40px var(--amber-glow);}
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 50px var(--amber-glow-strong);background:var(--amber-light);}
+  .btn-secondary{background:transparent;color:var(--text-primary);padding:16px 36px;border-radius:50px;font-weight:600;font-size:1rem;border:1px solid var(--border);cursor:pointer;font-family:'Cairo',sans-serif;transition:all .3s;}
+  .btn-secondary:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-glow);}
+
+  .full-section{padding:90px 60px;max-width:1160px;margin:0 auto;}
+  .section-tag{display:inline-block;background:var(--amber-glow);border:1px solid rgba(245,166,35,.3);color:var(--amber);padding:6px 16px;border-radius:50px;font-size:.78rem;font-weight:700;letter-spacing:.05em;margin-bottom:18px;}
+  .section-title{font-family:'Tajawal',sans-serif;font-size:clamp(1.7rem,3vw,2.5rem);font-weight:800;line-height:1.3;margin-bottom:14px;}
+  .section-sub{font-size:1rem;color:var(--text-secondary);max-width:520px;margin-bottom:52px;}
+
+  .delivers-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;}
+  .deliver-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:24px;transition:all .3s;display:flex;gap:16px;align-items:flex-start;}
+  .deliver-item:hover{border-color:rgba(245,166,35,.3);background:var(--amber-glow);transform:translateY(-3px);}
+  .deliver-icon{font-size:1.8rem;flex-shrink:0;filter:drop-shadow(0 2px 8px rgba(245,166,35,.3));}
+  .deliver-text h4{font-size:.95rem;font-weight:700;margin-bottom:6px;}
+  .deliver-text p{font-size:.83rem;color:var(--text-secondary);line-height:1.55;}
+
+  .flow{display:flex;flex-direction:column;position:relative;}
+  .flow::before{content:'';position:absolute;right:35px;top:60px;bottom:60px;width:2px;background:linear-gradient(to bottom,var(--amber),var(--steel),var(--green));opacity:.25;}
+  .flow-step{display:grid;grid-template-columns:1fr 80px;gap:32px;align-items:center;padding:36px 0;border-bottom:1px solid var(--border);transition:all .3s;}
+  .flow-step:last-child{border-bottom:none;}
+  .flow-step:hover .flow-card{border-color:var(--amber);transform:translateX(-6px);}
+  .flow-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px;transition:all .3s;}
+  .flow-role{display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:50px;font-size:.77rem;font-weight:700;margin-bottom:14px;}
+  .role-admin{background:var(--steel-glow);color:var(--steel);border:1px solid rgba(74,144,217,.3);}
+  .role-seller{background:var(--amber-glow);color:var(--amber);border:1px solid rgba(245,166,35,.3);}
+  .role-cashier{background:rgba(46,204,113,.1);color:var(--green);border:1px solid rgba(46,204,113,.3);}
+  .flow-card h3{font-size:1.1rem;font-weight:700;margin-bottom:10px;}
+  .flow-card ul{list-style:none;display:flex;flex-direction:column;gap:7px;}
+  .flow-card ul li{font-size:.87rem;color:var(--text-secondary);display:flex;align-items:center;gap:8px;}
+  .flow-card ul li::before{content:'→';color:var(--amber);font-weight:700;flex-shrink:0;}
+  .flow-num{width:52px;height:52px;background:var(--card);border:2px solid var(--amber);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Tajawal',sans-serif;font-size:1.2rem;font-weight:800;color:var(--amber);justify-self:center;box-shadow:0 0 18px var(--amber-glow);flex-shrink:0;}
+
+  /* DATA CARDS */
+  .data-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;}
+  .data-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px 28px;position:relative;overflow:hidden;transition:all .35s;}
+  .data-card.featured{border-color:rgba(245,166,35,.4);box-shadow:0 0 50px var(--amber-glow);}
+  .data-card:hover{transform:translateY(-6px);box-shadow:0 24px 60px rgba(0,0,0,.4);border-color:rgba(245,166,35,.35);}
+  .data-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--amber),var(--amber-light));transform:scaleX(0);transform-origin:right;transition:transform .35s;}
+  .data-card:hover::before,.data-card.featured::before{transform:scaleX(1);transform-origin:left;}
+  .data-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:50px;font-size:.75rem;font-weight:700;margin-bottom:20px;}
+  .badge-sm{background:var(--steel-glow);color:var(--steel);border:1px solid rgba(74,144,217,.3);}
+  .badge-md{background:var(--amber-glow);color:var(--amber);border:1px solid rgba(245,166,35,.3);}
+  .badge-lg{background:rgba(46,204,113,.1);color:var(--green);border:1px solid rgba(46,204,113,.3);}
+  .rec-badge{position:absolute;top:16px;left:16px;background:var(--amber);color:var(--black);font-size:.65rem;font-weight:800;padding:3px 10px;border-radius:50px;}
+  .data-size{font-size:.82rem;color:var(--text-muted);margin-bottom:4px;}
+  .data-title{font-family:'Tajawal',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:20px;}
+  .data-timeline{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--radius-sm);}
+  .timeline-icon{font-size:1.2rem;}
+  .timeline-text strong{display:block;font-size:1rem;font-weight:700;}
+  .timeline-text span{font-size:.78rem;color:var(--text-muted);}
+  .data-features{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:24px;}
+  .data-features li{font-size:.87rem;color:var(--text-secondary);display:flex;align-items:center;gap:10px;}
+  .data-features li::before{content:'✓';color:var(--amber);font-weight:800;flex-shrink:0;}
+  .data-price-row{border-top:1px solid var(--border);padding-top:20px;display:flex;align-items:flex-end;justify-content:space-between;}
+  .data-price-label{font-size:.75rem;color:var(--text-muted);}
+  .data-price-amount{font-family:'Tajawal',sans-serif;font-size:2rem;font-weight:800;color:var(--amber);line-height:1;}
+  .data-price-curr{font-size:.9rem;color:var(--amber);opacity:.7;margin-right:3px;}
+
+  /* PHASES */
+  .timeline-phases{position:relative;padding-right:40px;}
+  .timeline-phases::before{content:'';position:absolute;right:18px;top:20px;bottom:20px;width:2px;background:linear-gradient(to bottom,var(--amber),var(--steel),var(--green));opacity:.25;}
+  .phase-item{display:flex;gap:28px;align-items:flex-start;margin-bottom:24px;position:relative;}
+  .phase-dot{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;flex-shrink:0;position:relative;right:-9px;font-family:'Tajawal',sans-serif;}
+  .dot-amber{background:var(--amber-glow);border:2px solid var(--amber);color:var(--amber);}
+  .dot-blue{background:var(--steel-glow);border:2px solid var(--steel);color:var(--steel);}
+  .dot-green{background:rgba(46,204,113,.1);border:2px solid var(--green);color:var(--green);}
+  .phase-content{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:20px 24px;flex:1;transition:all .3s;}
+  .phase-content:hover{border-color:rgba(245,166,35,.3);transform:translateX(-4px);}
+  .phase-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
+  .phase-title{font-size:1rem;font-weight:700;}
+  .phase-duration{background:var(--amber-glow);border:1px solid rgba(245,166,35,.25);color:var(--amber);padding:3px 12px;border-radius:50px;font-size:.75rem;font-weight:700;white-space:nowrap;}
+  .phase-desc{font-size:.88rem;color:var(--text-secondary);line-height:1.6;}
+
+  /* CTA */
+  .cta-section{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:72px 60px;text-align:center;position:relative;overflow:hidden;max-width:1160px;margin:0 auto 80px;}
+  .cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,var(--amber-glow-strong) 0%,transparent 70%);pointer-events:none;}
+  .cta-section h2{font-family:'Tajawal',sans-serif;font-size:clamp(1.9rem,3.5vw,2.8rem);font-weight:800;margin-bottom:16px;position:relative;}
+  .cta-sub{color:var(--text-secondary);font-size:1rem;max-width:480px;margin:0 auto 28px;position:relative;}
+  .cta-price-reminder{display:inline-flex;align-items:center;gap:10px;background:var(--amber-glow);border:1px solid rgba(245,166,35,.3);border-radius:50px;padding:10px 24px;font-size:.88rem;color:var(--amber);font-weight:700;margin-bottom:28px;position:relative;}
+  .cta-big-btn{display:inline-flex;align-items:center;gap:12px;background:var(--amber);color:var(--black);padding:18px 44px;border-radius:50px;font-weight:800;font-size:1.05rem;border:none;cursor:pointer;font-family:'Cairo',sans-serif;position:relative;transition:all .3s;box-shadow:0 0 60px var(--amber-glow-strong);text-decoration:none;}
+  .cta-big-btn:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 20px 80px var(--amber-glow-strong);background:var(--amber-light);}
+  .cta-note{margin-top:18px;font-size:.82rem;color:var(--text-muted);position:relative;}
+
+  footer{border-top:1px solid var(--border);padding:36px 60px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;}
+  .footer-logo{font-family:'Tajawal',sans-serif;font-size:1.15rem;font-weight:800;display:flex;align-items:center;gap:8px;}
+  .footer-copy{font-size:.82rem;color:var(--text-muted);}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+  .reveal{opacity:0;transform:translateY(36px);transition:opacity .7s ease,transform .7s ease;}
+  .reveal.visible{opacity:1;transform:translateY(0);}
+
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-track{background:var(--black);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--amber);}
+
+  @media(max-width:768px){
+    nav{padding:14px 20px;}
+    .personal-banner{padding:12px 20px;font-size:.8rem;text-align:center;}
+    .full-section{padding:60px 20px;}
+    .price-hero-card{padding:28px 24px;gap:28px;flex-direction:column;}
+    .price-divider{width:80%;height:1px;}
+    .price-includes{text-align:center;align-items:center;}
+    .flow::before{display:none;}
+    .flow-step{grid-template-columns:1fr;gap:16px;}
+    .flow-num{justify-self:start;}
+    .cta-section{padding:48px 24px;margin:0 16px 60px;}
+    footer{padding:28px 20px;flex-direction:column;text-align:center;}
+    .timeline-phases{padding-right:28px;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><div class="logo-icon">🏗️</div>BuildFlow</div>
+  <button class="nav-cta" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">تواصل معي الآن</button>
+</nav>
+
+<div class="personal-banner">
+  <span class="banner-dot"></span>
+  هذا العرض مُعدّ خصيصاً لك — سعر واحد، تسليم واضح، بدون مفاجآت
+  <span class="banner-dot"></span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-label">📋 عرض مخصص لمحل أدوات البناء</div>
+  <h1>نظام البيع الذكي اللي<br><span class="accent">محلك يستاهله</span></h1>
+  <p class="sub">ربط لحظي بين البائع والكاشير — عميلك يختار، البائع يجمع الفاتورة على هاتفه، والكاشير يستقبلها في ثانية. بدون ورق، بدون زحام، بدون أخطاء.</p>
+
+  <div class="price-hero-wrap">
+    <div class="price-hero-card">
+      <div class="price-block">
+        <span class="price-label">💰 سعر المشروع</span>
+        <div class="price-amount"><span class="price-currency">جـ</span>10,899</div>
+        <div class="price-note">دفعة واحدة — بدون رسوم شهرية</div>
+      </div>
+      <div class="price-divider"></div>
+      <div class="price-block">
+        <span class="price-label">📅 مدة التسليم</span>
+        <div class="timeline-range">أسبوعان → شهران</div>
+        <div class="timeline-sub">حسب حجم بيانات محلك</div>
+      </div>
+      <div class="price-divider"></div>
+      <div class="price-includes">
+        <span class="price-label">✅ الشامل</span>
+        <div class="include-item"><span class="chk">✦</span> تطبيق موبايل للبائع</div>
+        <div class="include-item"><span class="chk">✦</span> لوحة كاشير ويب</div>
+        <div class="include-item"><span class="chk">✦</span> لوحة تحكم الأدمن</div>
+        <div class="include-item"><span class="chk">✦</span> قاعدة بيانات Firebase</div>
+        <div class="include-item"><span class="chk">✦</span> تدريب وتسليم كامل</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">🤝 أنا موافق، نبدأ</button>
+    <button class="btn-secondary" onclick="document.getElementById('timeline').scrollIntoView({behavior:'smooth'})">شوف خطة التسليم</button>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<div class="full-section">
+  <div class="reveal">
+    <div class="section-tag">⚠️ المشكلة اللي بتعانيها دلوقتي</div>
+    <h2 class="section-title">ليه الزبون بيزهق قبل ما يدفع؟</h2>
+    <p class="section-sub">في محلات أدوات البناء، رحلة الشراء بتاخد وقت أكبر مما لازم.</p>
+  </div>
+  <div class="delivers-grid">
+    <div class="deliver-item reveal" style="border-color:rgba(220,53,69,.2);">
+      <div class="deliver-icon">🕐</div>
+      <div class="deliver-text"><h4 style="color:#ff6b6b;">زحام وانتظار عند الكاشير</h4><p>البائع بيمشي مع العميل، وبعدين كل حاجة بتتكتب يدوي عند الكاشير وكل العملاء واقفين.</p></div>
+    </div>
+    <div class="deliver-item reveal" style="border-color:rgba(220,53,69,.2);">
+      <div class="deliver-icon">❌</div>
+      <div class="deliver-text"><h4 style="color:#ff6b6b;">أخطاء في الأسعار</h4><p>البائع بيقول سعر، الكاشير بيكتب تاني — ومحدش عارف الصح من الغلط.</p></div>
+    </div>
+    <div class="deliver-item reveal" style="border-color:rgba(220,53,69,.2);">
+      <div class="deliver-icon">📝</div>
+      <div class="deliver-text"><h4 style="color:#ff6b6b;">ورق بيضيع ومبيعات بتتضيع</h4><p>مفيش سجل واضح لمبيعات كل بائع أو لأكثر المنتجات مبيعاً.</p></div>
+    </div>
+    <div class="deliver-item reveal" style="border-color:rgba(220,53,69,.2);">
+      <div class="deliver-icon">🔍</div>
+      <div class="deliver-text"><h4 style="color:#ff6b6b;">البائع مش حافظ الأسعار</h4><p>آلاف المنتجات — البائع بيروح يسأل المدير وده بيبطل العمل.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="full-section">
+  <div class="reveal">
+    <div class="section-tag">⚡ الحل</div>
+    <h2 class="section-title">رحلة البيع من أولها لآخرها</h2>
+    <p class="section-sub">3 واجهات تشتغل مع بعض بشكل لحظي — كل شخص شايف اللي محتاجه بس.</p>
+  </div>
+  <div class="flow">
+    <div class="flow-step reveal">
+      <div class="flow-card">
+        <div class="flow-role role-admin">🔑 المدير (Admin)</div>
+        <h3>يبني النظام من الصفر</h3>
+        <ul>
+          <li>يضيف المنتجات بالاسم والسعر والقسم والكمية</li>
+          <li>النظام يولد QR Code لكل منتج للطباعة واللصق على البضاعة</li>
+          <li>يضيف بائعين وكاشيرات ويتابع مبيعات كل واحد</li>
+          <li>يعدل سعر منتج واحد أو كل المنتجات دفعة بضغطة واحدة</li>
+        </ul>
+      </div>
+      <div class="flow-num">١</div>
+    </div>
+    <div class="flow-step reveal">
+      <div class="flow-card">
+        <div class="flow-role role-seller">📱 البائع (Seller)</div>
+        <h3>يمشي مع العميل بدون قلق</h3>
+        <ul>
+          <li>يمسح QR Code على أي منتج بكاميرا هاتفه</li>
+          <li>يشوف الاسم والسعر والكمية المتاحة فوراً</li>
+          <li>يضيف للسلة ويختار (قطعة / متر / كيلو / كيس)</li>
+          <li>لو الكمية كبيرة، سعر الجملة بيتطبق تلقائياً</li>
+          <li>ضغطة واحدة ترسل الطلب للكاشير لحظياً</li>
+        </ul>
+      </div>
+      <div class="flow-num">٢</div>
+    </div>
+    <div class="flow-step reveal">
+      <div class="flow-card">
+        <div class="flow-role role-cashier">💰 الكاشير (Cashier)</div>
+        <h3>يستقبل ويدفع في ثوانٍ</h3>
+        <ul>
+          <li>الطلب بيظهر على شاشته فوراً بدون تحديث</li>
+          <li>العميل بيجي ويقوله رقم الطلب (#45)</li>
+          <li>يفتحه، يراجعه، يضغط "تأكيد"</li>
+          <li>الفاتورة بتتطبع والمخزون بيتخصم تلقائياً</li>
+        </ul>
+      </div>
+      <div class="flow-num">٣</div>
+    </div>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<div class="full-section" id="timeline">
+  <div class="reveal">
+    <div class="section-tag">📅 مدة التسليم</div>
+    <h2 class="section-title">المدة بتتحدد بحجم بياناتك</h2>
+    <p class="section-sub">مش رقم عشوائي — كل فترة مبنية على كمية المنتجات اللي هترفعها في النظام.</p>
+  </div>
+
+  <div class="data-cards reveal" style="margin-bottom:60px;">
+    <div class="data-card">
+      <div class="data-badge badge-sm">📦 حجم صغير</div>
+      <div class="data-size">أقل من 500 منتج</div>
+      <div class="data-title">محل ناشئ أو متخصص</div>
+      <div class="data-timeline">
+        <span class="timeline-icon">⚡</span>
+        <div class="timeline-text"><strong>أسبوعان (14 يوم)</strong><span>أسرع تسليم ممكن</span></div>
+      </div>
+      <ul class="data-features">
+        <li>إعداد Firebase وربط التطبيق</li>
+        <li>رفع المنتجات وطباعة الملصقات</li>
+        <li>تدريب الفريق بالكامل</li>
+        <li>تسليم كامل وجاهز للشغل</li>
+      </ul>
+      <div class="data-price-row">
+        <span class="data-price-label">السعر الإجمالي</span>
+        <div><span class="data-price-curr">جـ</span><span class="data-price-amount">10,899</span></div>
+      </div>
+    </div>
+
+    <div class="data-card featured">
+      <div class="rec-badge">⭐ الأكثر شيوعاً</div>
+      <div class="data-badge badge-md">📦📦 حجم متوسط</div>
+      <div class="data-size">500 — 2000 منتج</div>
+      <div class="data-title">محل كبير ومتنوع</div>
+      <div class="data-timeline">
+        <span class="timeline-icon">🗓️</span>
+        <div class="timeline-text"><strong>شهر — شهر ونص</strong><span>تسليم مرحلي مريح</span></div>
+      </div>
+      <ul class="data-features">
+        <li>كل مميزات الحجم الصغير</li>
+        <li>تصنيف المنتجات بالأقسام والألوان</li>
+        <li>ضبط سعر الجملة لكل منتج</li>
+        <li>تقارير المبيعات وعمولات البائعين</li>
+        <li>دعم فني لمدة شهر بعد التسليم</li>
+      </ul>
+      <div class="data-price-row">
+        <span class="data-price-label">السعر الإجمالي</span>
+        <div><span class="data-price-curr">جـ</span><span class="data-price-amount">10,899</span></div>
+      </div>
+    </div>
+
+    <div class="data-card">
+      <div class="data-badge badge-lg">📦📦📦 حجم كبير</div>
+      <div class="data-size">أكثر من 2000 منتج</div>
+      <div class="data-title">محل ضخم ومتكامل</div>
+      <div class="data-timeline">
+        <span class="timeline-icon">🏗️</span>
+        <div class="timeline-text"><strong>شهران (60 يوم)</strong><span>تنفيذ دقيق ومضمون</span></div>
+      </div>
+      <ul class="data-features">
+        <li>كل مميزات الأحجام السابقة</li>
+        <li>استيراد المنتجات من ملف Excel</li>
+        <li>Offline Mode كامل للمستودعات</li>
+        <li>اختبار شامل قبل التسليم</li>
+        <li>دعم فني لمدة شهرين بعد التسليم</li>
+      </ul>
+      <div class="data-price-row">
+        <span class="data-price-label">السعر الإجمالي</span>
+        <div><span class="data-price-curr">جـ</span><span class="data-price-amount">10,899</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reveal">
+    <h3 style="font-family:'Tajawal',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:32px;">📋 خطة التنفيذ خطوة بخطوة</h3>
+  </div>
+
+  <div class="timeline-phases reveal">
+    <div class="phase-item">
+      <div class="phase-dot dot-amber">١</div>
+      <div class="phase-content">
+        <div class="phase-header"><span class="phase-title">🔧 إعداد المشروع وربط Firebase</span><span class="phase-duration">أيام 1 — 3</span></div>
+        <p class="phase-desc">إنشاء المشروع، ربط قاعدة البيانات، إعداد صلاحيات كل مستخدم.</p>
+      </div>
+    </div>
+    <div class="phase-item">
+      <div class="phase-dot dot-amber">٢</div>
+      <div class="phase-content">
+        <div class="phase-header"><span class="phase-title">🔐 نظام تسجيل الدخول</span><span class="phase-duration">أيام 4 — 6</span></div>
+        <p class="phase-desc">كل دور بيدخل بحسابه ويشوف واجهته المخصصة فقط.</p>
+      </div>
+    </div>
+    <div class="phase-item">
+      <div class="phase-dot dot-amber">٣</div>
+      <div class="phase-content">
+        <div class="phase-header"><span class="phase-title">📦 إدارة المنتجات والباركود</span><span class="phase-duration">أيام 7 — 12</span></div>
+        <p class="phase-desc">لوحة الأدمن الكاملة — إضافة منتجات، توليد QR Code، طباعة الملصقات، تعديل الأسعار.</p>
+      </div>
+    </div>
+    <div class="phase-item">
+      <div class="phase-dot dot-blue">٤</div>
+      <div class="phase-content">
+        <div class="phase-header"><span class="phase-title">📱 تطبيق البائع (المسح والسلة)</span><span class="phase-duration">أيام 13 — 20</span></div>
+        <p class="phase-desc">ماسح الباركود، بيانات المنتج الفورية، السلة بوحدات القياس المرنة، والتسعير التلقائي للجملة.</p>
+      </div>
+    </div>
+    <div class="phase-item">
+      <div class="phase-dot dot-blue">٥</div>
+      <div class="phase-content">
+        <div class="phase-header"><span class="phase-title">⚡ الربط اللحظي بين البائع والكاشير</span><span class="phase-duration">أيام 21 — 28</span></div>
+        <p class="phase-desc">نظام الأرقام التسلسلية، الإرسال الفوري، والدعم الكامل لضعف الإنترنت.</p>
+      </div>
+    </div>
+    <div class="phase-item">
+      <div class="phase-dot dot-green">٦</div>
+      <div class="phase-content">
+        <div class="phase-header"><span class="phase-title">💰 شاشة الكاشير وإصدار الفواتير</span><span class="phase-duration">أسبوع 5</span></div>
+        <p class="phase-desc">استقبال الطلبات، تأكيدها، طباعة الفاتورة، وخصم المخزون تلقائياً.</p>
+      </div>
+    </div>
+    <div class="phase-item">
+      <div class="phase-dot dot-green">٧</div>
+      <div class="phase-content">
+        <div class="phase-header"><span class="phase-title">✅ اختبار وتسليم وتدريب</span><span class="phase-duration">آخر الجدول</span></div>
+        <p class="phase-desc">اختبار شامل للنظام، تدريب فريقك عليه، وتسليم كامل مع دعم فني.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHAT YOU GET -->
+<div class="full-section">
+  <div class="reveal">
+    <div class="section-tag">🎁 اللي بتاخده</div>
+    <h2 class="section-title">الـ 10,899 جنيه شاملة كل حاجة</h2>
+    <p class="section-sub">مفيش رسوم خفية، مفيش إضافات بعدين — كل ده جزء من العرض.</p>
+  </div>
+  <div class="delivers-grid">
+    <div class="deliver-item reveal"><div class="deliver-icon">📱</div><div class="deliver-text"><h4>تطبيق موبايل للبائع</h4><p>Android وiOS — مسح الباركود، السلة، والإرسال الفوري.</p></div></div>
+    <div class="deliver-item reveal"><div class="deliver-icon">🖥️</div><div class="deliver-text"><h4>لوحة الكاشير (ويب/تابلت)</h4><p>تشتغل على أي جهاز بدون تحميل أي حاجة.</p></div></div>
+    <div class="deliver-item reveal"><div class="deliver-icon">⚙️</div><div class="deliver-text"><h4>لوحة تحكم الأدمن</h4><p>إدارة كاملة للمنتجات والفريق والأسعار والتقارير.</p></div></div>
+    <div class="deliver-item reveal"><div class="deliver-icon">🏷️</div><div class="deliver-text"><h4>توليد وطباعة الملصقات</h4><p>QR Code جاهز للطباعة لكل منتج في محلك.</p></div></div>
+    <div class="deliver-item reveal"><div class="deliver-icon">☁️</div><div class="deliver-text"><h4>قاعدة بيانات Firebase</h4><p>سحابية وآمنة — بياناتك محفوظة حتى لو الجهاز اتكسر.</p></div></div>
+    <div class="deliver-item reveal"><div class="deliver-icon">📶</div><div class="deliver-text"><h4>يعمل بدون إنترنت</h4><p>البائع في المستودع؟ التطبيق بيشتغل والمزامنة لما الإنترنت يرجع.</p></div></div>
+    <div class="deliver-item reveal"><div class="deliver-icon">📊</div><div class="deliver-text"><h4>تقارير وعمولات البائعين</h4><p>تعرف مين أكتر بائع وأكثر المنتجات مبيعاً بالأرقام الحقيقية.</p></div></div>
+    <div class="deliver-item reveal"><div class="deliver-icon">🎓</div><div class="deliver-text"><h4>تدريب كامل للفريق</h4><p>هدرب الأدمن والبائعين والكاشير حتى يبقوا محترفين فيه.</p></div></div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div style="padding:0 40px;">
+  <div class="cta-section reveal" id="cta">
+    <h2>خطوة واحدة تفصلك عن نظام احترافي</h2>
+    <p class="cta-sub">تواصل معي دلوقتي لنحدد حجم بياناتك ونبدأ التنفيذ فوراً.</p>
+    <div class="cta-price-reminder">💰 السعر الإجمالي: 10,899 جنيه — دفعة واحدة، بدون رسوم شهرية</div>
+    <br>
+    <a href="https://wa.me/201000000000?text=عايز%20أبدأ%20مع%20BuildFlow" class="cta-big-btn" target="_blank">💬 تواصل معي على واتساب</a>
+    <p class="cta-note">أو راسلني لترتيب عرض مباشر (Demo) مجاني بدون أي التزام</p>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo"><div class="logo-icon">🏗️</div>BuildFlow</div>
+  <div class="footer-copy">عرض مخصص لمحل أدوات البناء · 10,899 جنيه · تسليم من أسبوعين لشهرين</div>
+</footer>
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 70);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -50px 0px' });
+  reveals.forEach(el => obs.observe(el));
+  window.addEventListener('scroll', () => {
+    document.querySelector('nav').style.background =
+      window.scrollY > 60 ? 'rgba(10,10,10,0.99)' : 'rgba(10,10,10,0.9)';
+  });
+</script>
+</body>
+</html>
