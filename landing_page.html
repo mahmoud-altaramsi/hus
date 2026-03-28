@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuildFlow — نظام البيع الذكي لمحلات أدوات البناء</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --surface: #111214;
+    --card: #181a1d;
+    --border: #252830;
+    --amber: #f5a623;
+    --amber-light: #ffc94d;
+    --amber-glow: rgba(245,166,35,0.15);
+    --amber-glow-strong: rgba(245,166,35,0.25);
+    --steel: #4a90d9;
+    --steel-glow: rgba(74,144,217,0.15);
+    --green: #2ecc71;
+    --text-primary: #f0ede8;
+    --text-secondary: #8a8f9a;
+    --text-muted: #555a66;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: var(--black);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    line-height: 1.7;
+  }
+
+  /* ─── NOISE OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(10,10,10,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--amber);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+  }
+
+  .nav-cta {
+    background: var(--amber);
+    color: var(--black);
+    padding: 10px 26px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    font-family: 'Cairo', sans-serif;
+  }
+
+  .nav-cta:hover {
+    background: var(--amber-light);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px var(--amber-glow-strong);
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 140px 40px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px; height: 500px;
+    background: radial-gradient(ellipse, var(--amber-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(245,166,35,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,166,35,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    color: var(--amber);
+    font-weight: 600;
+    margin-bottom: 32px;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .badge-dot {
+    width: 8px; height: 8px;
+    background: var(--amber);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .hero h1 {
+    font-family: 'Tajawal', sans-serif;
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+
+  .hero h1 .highlight {
+    color: var(--amber);
+    position: relative;
+  }
+
+  .hero h1 .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0; right: 0;
+    height: 3px;
+    background: var(--amber);
+    border-radius: 2px;
+    opacity: 0.5;
+  }
+
+  .hero p {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    max-width: 620px;
+    margin: 0 auto 48px;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.8s 0.2s ease both;
+    font-weight: 400;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .btn-primary {
+    background: var(--amber);
+    color: var(--black);
+    padding: 16px 36px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    font-family: 'Cairo', sans-serif;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 40px var(--amber-glow);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 50px var(--amber-glow-strong);
+    background: var(--amber-light);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-primary);
+    padding: 16px 36px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1rem;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-family: 'Cairo', sans-serif;
+    transition: all 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--amber);
+    color: var(--amber);
+    background: var(--amber-glow);
+  }
+
+  /* ─── STATS BAR ─── */
+  .stats-bar {
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 60px;
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-number {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--amber);
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  /* ─── SECTIONS ─── */
+  section {
+    padding: 100px 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-tag {
+    display: inline-block;
+    background: var(--amber-glow);
+    border: 1px solid rgba(245,166,35,0.3);
+    color: var(--amber);
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: 'Tajawal', sans-serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    max-width: 560px;
+    margin-bottom: 60px;
+  }
+
+  /* ─── PROBLEM ─── */
+  .problem-section {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--card) 100%);
+    border-radius: 24px;
+    padding: 80px 60px;
+    margin: 0 40px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .problem-section::before {
+    content: '';
+    position: absolute;
+    top: -100px; left: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(220,53,69,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .problem-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 48px;
+  }
+
+  .problem-card {
+    background: rgba(220,53,69,0.06);
+    border: 1px solid rgba(220,53,69,0.15);
+    border-radius: var(--radius);
+    padding: 28px;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .problem-card:hover {
+    border-color: rgba(220,53,69,0.35);
+    transform: translateY(-4px);
+  }
+
+  .problem-icon {
+    font-size: 2rem;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .problem-card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #ff6b6b;
+  }
+
+  .problem-card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ─── SOLUTION FLOW ─── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+
+  .flow::before {
+    content: '';
+    position: absolute;
+    right: 35px;
+    top: 60px;
+    bottom: 60px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--amber), var(--steel), var(--green));
+    opacity: 0.3;
+  }
+
+  .flow-step {
+    display: grid;
+    grid-template-columns: 1fr 80px;
+    gap: 40px;
+    align-items: center;
+    padding: 40px 0;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s ease;
+  }
+
+  .flow-step:last-child { border-bottom: none; }
+
+  .flow-step:hover .flow-card { border-color: var(--amber); transform: translateX(-8px); }
+
+  .flow-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    transition: all 0.3s ease;
+  }
+
+  .flow-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .role-admin { background: var(--steel-glow); color: var(--steel); border: 1px solid rgba(74,144,217,0.3); }
+  .role-seller { background: var(--amber-glow); color: var(--amber); border: 1px solid rgba(245,166,35,0.3); }
+  .role-cashier { background: rgba(46,204,113,0.1); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+
+  .flow-card h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .flow-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+
+  .flow-card ul {
+    list-style: none;
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .flow-card ul li {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .flow-card ul li::before {
+    content: '→';
+    color: var(--amber);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .flow-num {
+    width: 56px; height: 56px;
+    background: var(--card);
+    border: 2px solid var(--amber);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--amber);
+    justify-self: center;
+    box-shadow: 0 0 20px var(--amber-glow);
+    flex-shrink: 0;
+  }
+
+  /* ─── FEATURES ─── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    transition: all 0.35s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--amber), var(--amber-light));
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.35s ease;
+  }
+
+  .feature-card:hover {
+    border-color: rgba(245,166,35,0.3);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .feature-card:hover::before { transform: scaleX(1); transform-origin: left; }
+
+  .feature-emoji {
+    font-size: 2.2rem;
+    margin-bottom: 20px;
+    display: block;
+    filter: drop-shadow(0 4px 12px rgba(245,166,35,0.3));
+  }
+
+  .feature-card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+  }
+
+  .feature-card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+
+  .wow-tag {
+    display: inline-block;
+    background: var(--amber);
+    color: var(--black);
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 50px;
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── UI PREVIEW ─── */
+  .ui-preview {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ui-preview::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, var(--amber-glow) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .phone-mockup {
+    display: inline-block;
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 36px;
+    width: 260px;
+    height: 480px;
+    position: relative;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+    overflow: hidden;
+    vertical-align: top;
+    margin: 0 -20px;
+  }
+
+  .phone-mockup.center {
+    transform: scale(1.08);
+    z-index: 2;
+    box-shadow: 0 50px 120px rgba(0,0,0,0.7), 0 0 60px var(--amber-glow);
+    border-color: rgba(245,166,35,0.4);
+    margin: 0;
+  }
+
+  .phone-screen {
+    background: #0d0f12;
+    height: 100%;
+    padding: 20px 16px;
+    font-size: 0.7rem;
+  }
+
+  .phone-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #222;
+  }
+
+  .phone-app-name {
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--amber);
+  }
+
+  .phone-role-badge {
+    background: var(--amber-glow);
+    color: var(--amber);
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-size: 0.65rem;
+    border: 1px solid rgba(245,166,35,0.3);
+  }
+
+  .phone-scan-area {
+    background: #151820;
+    border: 2px dashed rgba(245,166,35,0.4);
+    border-radius: 12px;
+    height: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    gap: 6px;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+  }
+
+  .scan-icon { font-size: 1.6rem; }
+
+  .phone-product-item {
+    background: #151820;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .product-name { color: var(--text-primary); font-size: 0.72rem; font-weight: 600; }
+  .product-price { color: var(--amber); font-size: 0.72rem; font-weight: 700; }
+  .product-qty { color: var(--text-muted); font-size: 0.65rem; }
+
+  .phone-total {
+    background: var(--amber);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+  }
+
+  .total-label { color: var(--black); font-weight: 700; font-size: 0.72rem; }
+  .total-amount { color: var(--black); font-weight: 800; font-size: 0.85rem; font-family: 'Tajawal', sans-serif; }
+
+  .phone-send-btn {
+    background: #151820;
+    border: 1px solid rgba(245,166,35,0.4);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    color: var(--amber);
+    font-weight: 700;
+    margin-top: 10px;
+    font-size: 0.72rem;
+  }
+
+  /* Cashier screen */
+  .cashier-order {
+    background: #151820;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+
+  .order-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .order-num { color: var(--amber); font-weight: 800; font-size: 0.8rem; }
+  .order-seller { color: var(--text-secondary); font-size: 0.65rem; }
+  .order-status {
+    background: rgba(46,204,113,0.15);
+    color: var(--green);
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-size: 0.6rem;
+    border: 1px solid rgba(46,204,113,0.3);
+  }
+
+  .order-items { color: var(--text-secondary); font-size: 0.65rem; margin-bottom: 8px; }
+
+  .confirm-btn {
+    background: var(--green);
+    color: #fff;
+    border-radius: 6px;
+    padding: 6px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.65rem;
+    width: 100%;
+  }
+
+  /* Admin screen */
+  .admin-product-row {
+    background: #151820;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+  }
+
+  .admin-row-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .admin-product-name { color: var(--text-primary); font-size: 0.72rem; font-weight: 600; }
+  .admin-product-price { color: var(--amber); font-size: 0.72rem; font-weight: 700; }
+
+  .admin-qr-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--amber-glow);
+    border: 1px solid rgba(245,166,35,0.3);
+    border-radius: 4px;
+    padding: 3px 8px;
+    color: var(--amber);
+    font-size: 0.6rem;
+    font-weight: 700;
+    width: fit-content;
+  }
+
+  .bulk-bar {
+    background: var(--steel-glow);
+    border: 1px solid rgba(74,144,217,0.3);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .bulk-text { color: var(--steel); font-size: 0.65rem; font-weight: 700; }
+  .bulk-btn {
+    background: var(--steel);
+    color: #fff;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 0.6rem;
+    font-weight: 700;
+  }
+
+  .mockups-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 0;
+    padding: 40px 0 20px;
+  }
+
+  .mockup-label {
+    margin-top: 20px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  .mockup-wrapper {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .mockup-wrapper.main { z-index: 2; }
+
+  /* ─── WHY SECTION ─── */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .why-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 24px;
+    transition: all 0.3s ease;
+    background: var(--card);
+  }
+
+  .why-item:hover {
+    border-color: var(--amber);
+    background: var(--amber-glow);
+  }
+
+  .why-num {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--amber);
+    opacity: 0.3;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .why-item h4 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  .why-item p { font-size: 0.85rem; color: var(--text-secondary); }
+
+  /* ─── CTA ─── */
+  .cta-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 80px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto 80px;
+    max-width: 1200px;
+  }
+
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 100%, var(--amber-glow-strong) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-section h2 {
+    font-family: 'Tajawal', sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .cta-section p {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    max-width: 500px;
+    margin: 0 auto 40px;
+    position: relative;
+  }
+
+  .cta-big-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--amber);
+    color: var(--black);
+    padding: 20px 48px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    border: none;
+    cursor: pointer;
+    font-family: 'Cairo', sans-serif;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 60px var(--amber-glow-strong);
+    text-decoration: none;
+  }
+
+  .cta-big-btn:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 20px 80px var(--amber-glow-strong);
+    background: var(--amber-light);
+  }
+
+  .cta-note {
+    margin-top: 20px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    position: relative;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .footer-logo {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .footer-copy {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--amber); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    section { padding: 60px 20px; }
+    .stats-bar { padding: 24px 20px; gap: 40px; }
+    .problem-section { padding: 48px 24px; margin: 0 16px; }
+    .flow::before { display: none; }
+    .flow-step { grid-template-columns: 1fr; gap: 20px; }
+    .flow-num { justify-self: start; }
+    .mockups-row { gap: -10px; }
+    .phone-mockup { width: 200px; height: 380px; }
+    .phone-mockup.center { transform: scale(1.05); }
+    .cta-section { padding: 48px 24px; margin: 0 16px 60px; }
+    footer { padding: 32px 20px; flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">🏗️</div>
+    BuildFlow
+  </div>
+  <button class="nav-cta" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">اطلب تجربة الآن</button>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-grid"></div>
+
+  <div class="badge">
+    <span class="badge-dot"></span>
+    نظام ذكي لمحلات أدوات البناء
+  </div>
+
+  <h1>
+    بيّع أكثر،<br>
+    <span class="highlight">بدون زحام</span><br>
+    عند الكاشير
+  </h1>
+
+  <p>
+    ربط لحظي بين البائع والكاشير — العميل يختار، البائع يجمع الفاتورة على هاتفه، والكاشير يستقبلها في ثانية واحدة.
+  </p>
+
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">
+      🚀 اطلب تجربة مجانية
+    </button>
+    <button class="btn-secondary" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">
+      كيف يعمل النظام؟
+    </button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat">
+    <span class="stat-number">3</span>
+    <span class="stat-label">واجهات مخصصة (أدمن / بائع / كاشير)</span>
+  </div>
+  <div class="stat">
+    <span class="stat-number">1 ث</span>
+    <span class="stat-label">وقت وصول الطلب للكاشير</span>
+  </div>
+  <div class="stat">
+    <span class="stat-number">100%</span>
+    <span class="stat-label">يعمل بدون إنترنت</span>
+  </div>
+  <div class="stat">
+    <span class="stat-number">٠ ورق</span>
+    <span class="stat-label">فواتير رقمية بالكامل</span>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section>
+  <div class="problem-section reveal">
+    <div class="section-tag">⚠️ المشكلة الحالية</div>
+    <h2 class="section-title">ليه الزبون بيزهق قبل ما يدفع؟</h2>
+    <p class="section-sub">في محلات أدوات البناء، رحلة الشراء معقدة — والكاشير بيتحمل كل التبعات.</p>
+
+    <div class="problem-cards">
+      <div class="problem-card">
+        <span class="problem-icon">🕐</span>
+        <h3>انتظار طويل عند الكاشير</h3>
+        <p>البائع يمشي مع العميل في المحل، بعدين يتأخر في كتابة كل حاجة يدوي عند الكاشير وكل العملاء واقفين.</p>
+      </div>
+      <div class="problem-card">
+        <span class="problem-icon">❌</span>
+        <h3>أخطاء في الأسعار</h3>
+        <p>البائع بيقول سعر، الكاشير بيكتب تاني — والزبون هو اللي بيدفع الفرق بالإحراج أو بالخسارة.</p>
+      </div>
+      <div class="problem-card">
+        <span class="problem-icon">📝</span>
+        <h3>فاتورة ورقية بتضيع</h3>
+        <p>الورق بيتحل ويتبلل ويتضيع — ومفيش سجل واضح لمبيعات كل بائع أو لأكثر المنتجات مبيعاً.</p>
+      </div>
+      <div class="problem-card">
+        <span class="problem-icon">🔍</span>
+        <h3>البائع مش عارف الأسعار</h3>
+        <p>آلاف المنتجات في المحل — مستحيل البائع يحفظها كلها، فبيعدي البائع يسأل المدير وده بيبطل الشغل.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="reveal">
+    <div class="section-tag">⚡ الحل</div>
+    <h2 class="section-title">رحلة البيع من الأول للآخر</h2>
+    <p class="section-sub">ثلاث واجهات تشتغل مع بعض بشكل لحظي — كل شخص شايف اللي محتاج يشوفه بس.</p>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step reveal">
+      <div class="flow-card">
+        <div class="flow-role role-admin">🔑 المدير (Admin)</div>
+        <h3>يبني النظام من الصفر</h3>
+        <ul>
+          <li>يضيف المنتجات بالاسم والسعر والقسم والكمية</li>
+          <li>النظام يولد QR Code خاص بكل منتج للطباعة واللصق على البضاعة</li>
+          <li>يضيف حسابات للبائعين والكاشير</li>
+          <li>يعدل أسعار منتج بمفرده أو كل المنتجات دفعة واحدة</li>
+          <li>يشوف تقارير مبيعات كل بائع وعمولته</li>
+        </ul>
+      </div>
+      <div class="flow-num">١</div>
+    </div>
+
+    <div class="flow-step reveal">
+      <div class="flow-card">
+        <div class="flow-role role-seller">📱 البائع (Seller)</div>
+        <h3>يمشي مع العميل بدون قلق</h3>
+        <ul>
+          <li>يمسح الـ QR Code على أي منتج بكاميرا هاتفه</li>
+          <li>يشوف الاسم والسعر والكميات المتاحة فوراً</li>
+          <li>يضيف للسلة ويحدد (قطعة / متر / كيلو / كيس)</li>
+          <li>لو الكمية كبيرة، السعر بيتحول لسعر الجملة تلقائياً</li>
+          <li>بعد انتهاء العميل، ضغطة واحدة ترسل الطلب للكاشير</li>
+        </ul>
+      </div>
+      <div class="flow-num">٢</div>
+    </div>
+
+    <div class="flow-step reveal">
+      <div class="flow-card">
+        <div class="flow-role role-cashier">💰 الكاشير (Cashier)</div>
+        <h3>يستقبل ويدفع في ثوانٍ</h3>
+        <ul>
+          <li>الطلب يظهر على شاشته فوراً (بدون تحديث الصفحة)</li>
+          <li>العميل يجي ويقوله رقم الطلب (مثل: طلب #45)</li>
+          <li>يفتح الطلب، يراجعه، يضغط "تأكيد"</li>
+          <li>الفاتورة النهائية تُطبع والمخزون يتخصم تلقائياً</li>
+        </ul>
+      </div>
+      <div class="flow-num">٣</div>
+    </div>
+  </div>
+</section>
+
+<!-- UI PREVIEW -->
+<section>
+  <div class="reveal" style="text-align:center; margin-bottom: 20px;">
+    <div class="section-tag">📱 شكل التطبيق</div>
+    <h2 class="section-title">تصور واجهات التطبيق</h2>
+    <p class="section-sub" style="margin: 0 auto;">كل دور له واجهة مخصصة — بسيطة، سريعة، ومصممة لطبيعة الشغل.</p>
+  </div>
+
+  <div class="ui-preview reveal">
+    <div class="mockups-row">
+
+      <!-- Admin -->
+      <div class="mockup-wrapper">
+        <div class="phone-mockup">
+          <div class="phone-screen">
+            <div class="phone-topbar">
+              <span class="phone-app-name">BuildFlow</span>
+              <span class="phone-role-badge">Admin</span>
+            </div>
+            <div class="admin-product-row">
+              <div class="admin-row-top">
+                <span class="admin-product-name">شاكوش حديد 500g</span>
+                <span class="admin-product-price">45 ج</span>
+              </div>
+              <div class="admin-qr-btn">🖨️ طباعة الملصق</div>
+            </div>
+            <div class="admin-product-row">
+              <div class="admin-row-top">
+                <span class="admin-product-name">سلك نحاس 2.5mm</span>
+                <span class="admin-product-price">28 ج/م</span>
+              </div>
+              <div class="admin-qr-btn">🖨️ طباعة الملصق</div>
+            </div>
+            <div class="admin-product-row">
+              <div class="admin-row-top">
+                <span class="admin-product-name">أسمنت بورتلاند</span>
+                <span class="admin-product-price">85 ج/كيس</span>
+              </div>
+              <div class="admin-qr-btn">🖨️ طباعة الملصق</div>
+            </div>
+            <div class="bulk-bar">
+              <span class="bulk-text">⚡ رفع كل الأسعار +10%</span>
+              <span class="bulk-btn">تطبيق</span>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-label">🔑 لوحة الأدمن</div>
+      </div>
+
+      <!-- Seller (center/main) -->
+      <div class="mockup-wrapper main">
+        <div class="phone-mockup center">
+          <div class="phone-screen">
+            <div class="phone-topbar">
+              <span class="phone-app-name">BuildFlow</span>
+              <span class="phone-role-badge">بائع: أحمد</span>
+            </div>
+            <div class="phone-scan-area">
+              <span class="scan-icon">📷</span>
+              <span>امسح الباركود</span>
+              <span style="color:var(--amber); font-weight:700;">أو ابحث يدوياً</span>
+            </div>
+            <div class="phone-product-item">
+              <div>
+                <div class="product-name">شاكوش حديد 500g</div>
+                <div class="product-qty">× 2 قطعة</div>
+              </div>
+              <span class="product-price">90 ج</span>
+            </div>
+            <div class="phone-product-item">
+              <div>
+                <div class="product-name">سلك نحاس 2.5mm</div>
+                <div class="product-qty">× 15 متر</div>
+              </div>
+              <span class="product-price">420 ج</span>
+            </div>
+            <div class="phone-product-item">
+              <div>
+                <div class="product-name">أسمنت بورتلاند</div>
+                <div class="product-qty">× 5 كيس — 🏷️ سعر جملة</div>
+              </div>
+              <span class="product-price">380 ج</span>
+            </div>
+            <div class="phone-total">
+              <span class="total-label">الإجمالي</span>
+              <span class="total-amount">890 ج</span>
+            </div>
+            <div class="phone-send-btn">⚡ إرسال للكاشير ←</div>
+          </div>
+        </div>
+        <div class="mockup-label">📱 تطبيق البائع</div>
+      </div>
+
+      <!-- Cashier -->
+      <div class="mockup-wrapper">
+        <div class="phone-mockup">
+          <div class="phone-screen">
+            <div class="phone-topbar">
+              <span class="phone-app-name">BuildFlow</span>
+              <span class="phone-role-badge" style="color:var(--green); background:rgba(46,204,113,0.1); border-color:rgba(46,204,113,0.3);">Cashier</span>
+            </div>
+            <div class="cashier-order">
+              <div class="order-header">
+                <span class="order-num">طلب #47</span>
+                <span class="order-status">جديد</span>
+              </div>
+              <div class="order-seller">البائع: أحمد | الإجمالي: 890 ج</div>
+              <div class="order-items">3 منتجات • منذ ثانيتين</div>
+              <div class="confirm-btn">✅ تأكيد وإصدار الفاتورة</div>
+            </div>
+            <div class="cashier-order" style="opacity:0.5;">
+              <div class="order-header">
+                <span class="order-num">طلب #46</span>
+                <span class="order-status" style="background:rgba(74,144,217,0.1); color:var(--steel); border-color:rgba(74,144,217,0.3);">مكتمل</span>
+              </div>
+              <div class="order-seller">البائع: خالد | الإجمالي: 1,240 ج</div>
+              <div class="order-items">5 منتجات</div>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-label">💰 شاشة الكاشير</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section>
+  <div class="reveal">
+    <div class="section-tag">✨ المميزات</div>
+    <h2 class="section-title">كل اللي محتاجه في مكان واحد</h2>
+    <p class="section-sub">مميزات صُممت بناءً على احتياجات محلات أدوات البناء تحديداً.</p>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card reveal">
+      <span class="wow-tag">WOW</span>
+      <span class="feature-emoji">⚡</span>
+      <h3>ربط لحظي بين البائع والكاشير</h3>
+      <p>الطلب يوصل لشاشة الكاشير في أقل من ثانية — بدون واتساب، بدون ورق، بدون انتظار.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-emoji">📷</span>
+      <h3>مسح الباركود بالكاميرا</h3>
+      <p>البائع يمسح أي ملصق على المنتج ويشوف الاسم والسعر والمخزون فوراً على هاتفه.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-emoji">🏷️</span>
+      <h3>طباعة ملصقات QR تلقائياً</h3>
+      <p>الأدمن يضيف منتج والنظام يولد QR Code جاهز للطباعة واللصق على البضاعة مباشرة.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-emoji">📦</span>
+      <h3>وحدات قياس مرنة</h3>
+      <p>قطعة، متر، كيلو، كيس — البائع يختار الوحدة المناسبة لكل منتج وهو بيجمع الفاتورة.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="wow-tag">WOW</span>
+      <span class="feature-emoji">💰</span>
+      <h3>سعر الجملة التلقائي</h3>
+      <p>لو العميل اشترى كمية كبيرة، السعر بيتحول تلقائياً لسعر الجملة اللي حدده الأدمن — بدون أي تدخل.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-emoji">📶</span>
+      <h3>يعمل بدون إنترنت</h3>
+      <p>البائع في المستودع بعيد عن الراوتر؟ التطبيق بيشتغل عادي، والمزامنة بتتم لما الإنترنت يرجع.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-emoji">📊</span>
+      <h3>عمولات البائعين (Commission)</h3>
+      <p>كل بائع له ID خاص — النظام يحسب مبيعاته يومياً وشهرياً عشان الأدمن يعرف مين الأكفأ.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-emoji">⚙️</span>
+      <h3>تعديل الأسعار جماعياً</h3>
+      <p>ارتفعت أسعار مواد البناء؟ الأدمن يرفع كل الأسعار أو قسم معين بضغطة واحدة — مع زر تراجع للأمان.</p>
+    </div>
+    <div class="feature-card reveal">
+      <span class="feature-emoji">🎨</span>
+      <h3>تصنيف ملوّن للأقسام</h3>
+      <p>سباكة، كهرباء، حدادة — كل قسم له لون خاص عشان البائع يلاقي أي منتج بسرعة حتى لو الباركود اتبلش.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section>
+  <div class="reveal">
+    <div class="section-tag">🏆 ليه هذا النظام؟</div>
+    <h2 class="section-title">مش مجرد تطبيق — ده نظام عمل متكامل</h2>
+    <p class="section-sub">الفرق بين التطبيقات العامة والحل اللي صُمم لمحلات البناء تحديداً.</p>
+  </div>
+
+  <div class="why-grid reveal">
+    <div class="why-item">
+      <div class="why-num">01</div>
+      <h4>مصمم لأدوات البناء</h4>
+      <p>وحدات القياس، سعر الجملة، آلاف المنتجات — كل شيء متخصص لطبيعة شغلك.</p>
+    </div>
+    <div class="why-item">
+      <div class="why-num">02</div>
+      <h4>لا ورق لا أخطاء</h4>
+      <p>الأسعار بتيجي من قاعدة بيانات واحدة — مفيش فرق بين اللي البائع قاله والكاشير كتبه.</p>
+    </div>
+    <div class="why-item">
+      <div class="why-num">03</div>
+      <h4>الكاشير مش بوق تاني</h4>
+      <p>الكاشير بيستقبل فاتورة جاهزة — ومش محتاج يكتب أي حاجة من الأول.</p>
+    </div>
+    <div class="why-item">
+      <div class="why-num">04</div>
+      <h4>موبايل + ويب + تابلت</h4>
+      <p>البائع على موباليه، الكاشير على تابلت أو لابتوب — نفس النظام بيشتغل على الكل.</p>
+    </div>
+    <div class="why-item">
+      <div class="why-num">05</div>
+      <h4>جاهز للتوسع</h4>
+      <p>تقدر تضيف بائعين وكاشيرات جدد في أي وقت — النظام بيكبر معاك.</p>
+    </div>
+    <div class="why-item">
+      <div class="why-num">06</div>
+      <h4>بيانات حقيقية للمدير</h4>
+      <p>تقارير المبيعات وعمولات كل بائع — بدال ما تخمن، شوف الأرقام الحقيقية.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div id="cta" style="padding: 0 40px;">
+  <div class="cta-section reveal">
+    <h2>جاهز تطور شغلك؟</h2>
+    <p>خليني أريك كيف يشتغل النظام في محلك خطوة بخطوة — التجربة مجانية ومفيش أي التزام.</p>
+    <a href="https://wa.me/201000000000?text=عايز%20أعرف%20أكثر%20عن%20BuildFlow" class="cta-big-btn" target="_blank">
+      💬 تواصل معي على واتساب
+    </a>
+    <p class="cta-note">أو راسلني مباشرة لترتيب عرض مباشر (Demo) مجاني</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <div class="logo-icon">🏗️</div>
+    BuildFlow
+  </div>
+  <div class="footer-copy">نظام بيع ذكي لمحلات أدوات البناء · صُمم بعناية لاحتياجاتك</div>
+</footer>
+
+<script>
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Counter animation for stats
+  function animateCounter(el, target, suffix) {
+    let current = 0;
+    const increment = target / 40;
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        current = target;
+        clearInterval(timer);
+      }
+      el.textContent = Math.floor(current) + suffix;
+    }, 30);
+  }
+
+  // Smooth nav background
+  window.addEventListener('scroll', () => {
+    const nav = document.querySelector('nav');
+    nav.style.background = window.scrollY > 50
+      ? 'rgba(10,10,10,0.98)'
+      : 'rgba(10,10,10,0.85)';
+  });
+</script>
+
+</body>
+</html>
